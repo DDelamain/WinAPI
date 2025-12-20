@@ -1,4 +1,4 @@
-#include<Windows.h>
+п»ї#include<Windows.h>
 #include"resource.h"
 BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
@@ -12,13 +12,13 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
 	{
-	case WM_INITDIALOG:	//Инициализация окна диалога. Эта секция отрабатывает 1 раз - при запуске окна.
+	case WM_INITDIALOG:	//РРЅРёС†РёР°Р»РёР·Р°С†РёСЏ РѕРєРЅР° РґРёР°Р»РѕРіР°. Р­С‚Р° СЃРµРєС†РёСЏ РѕС‚СЂР°Р±Р°С‚С‹РІР°РµС‚ 1 СЂР°Р· - РїСЂРё Р·Р°РїСѓСЃРєРµ РѕРєРЅР°.
 	{
 		HICON hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_ICON1));
 		SendMessage(hwnd, WM_SETICON, 0, (LPARAM)hIcon);
 	}
 		break;
-	case WM_COMMAND:	//В этой секции обрабатываются нажатия кнопок, клавиш и другие события
+	case WM_COMMAND:	//Р’ СЌС‚РѕР№ СЃРµРєС†РёРё РѕР±СЂР°Р±Р°С‚С‹РІР°СЋС‚СЃСЏ РЅР°Р¶Р°С‚РёСЏ РєРЅРѕРїРѕРє, РєР»Р°РІРёС€ Рё РґСЂСѓРіРёРµ СЃРѕР±С‹С‚РёСЏ
 		switch (LOWORD(wParam))
 		{
 		case IDC_BUTTON_COPY:
@@ -31,11 +31,11 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			SendMessage(hEditPassword, WM_SETTEXT, 0, (LPARAM)sz_buffer);
 		}
 		break;
-		case IDOK: MessageBox(hwnd, "Была нажата кнопка ОК", "Info", MB_OK | MB_ICONINFORMATION); break;
+		case IDOK: MessageBox(hwnd, "Р‘С‹Р»Р° РЅР°Р¶Р°С‚Р° РєРЅРѕРїРєР° РћРљ", "Info", MB_OK | MB_ICONINFORMATION); break;
 		case IDCANCEL: EndDialog(hwnd, 0); break;
 		}
 		break;
-	case WM_CLOSE:		//Отрабатывает 1 раз при закрытии окна
+	case WM_CLOSE:		//РћС‚СЂР°Р±Р°С‚С‹РІР°РµС‚ 1 СЂР°Р· РїСЂРё Р·Р°РєСЂС‹С‚РёРё РѕРєРЅР°
 		EndDialog(hwnd, 0);
 		break;
 	}
