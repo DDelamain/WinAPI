@@ -16,9 +16,24 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 		HICON hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_ICON1));
 		SendMessage(hwnd, WM_SETICON, 0, (LPARAM)hIcon);
+		SetDlgItemTextA(hwnd, IDC_EDIT_LOGIN, "Введите имя пользователя");
 	}
 		break;
 	case WM_COMMAND:	//В этой секции обрабатываются нажатия кнопок, клавиш и другие события
+	{
+		if (LOWORD(wParam) == IDC_EDIT_LOGIN){//Проверяем, что выбрана именно строка с логином
+			if (HIWORD(wParam) == EN_SETFOCUS)//Проверка, что возвращаемое значение - это EN_SETFOCUS
+			{
+				SetDlgItemTextA(hwnd, IDC_EDIT_LOGIN, "");
+			}
+		}
+	}
+	{
+		if (HIWORD(wParam) == EN_KILLFOCUS)
+		{
+			SetDlgItemTextA(hwnd, IDC_EDIT_LOGIN, "Введите имя пользователя");
+		}
+	}
 		switch (LOWORD(wParam))
 		{
 		case IDC_BUTTON_COPY:
