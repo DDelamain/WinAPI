@@ -51,19 +51,15 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 		CONST INT SIZE = 256;//на паре
 		CHAR sz_buffer[SIZE] = {};//на паре
-		HWND hEditLogin = GetDlgItem(hwnd, IDC_EDIT_LOGIN);//на паре
-		SendMessage(hEditLogin, WM_GETTEXT, SIZE, (LPARAM)sz_buffer);// на паре
+		//HWND hEditLogin = GetDlgItem(hwnd, IDC_EDIT_LOGIN);//на паре
+		SendMessage((HWND)lParam, WM_GETTEXT, SIZE, (LPARAM)sz_buffer);// на паре
 
-		if (HIWORD(wParam) == EN_SETFOCUS)//на паре
-		{
-			if (strcmp(sz_buffer, g_sz_INVITE) == 0)//на паре
-				SendMessage(hEditLogin, WM_SETTEXT, 0, (LPARAM)"");//на паре
-		}
-		if (HIWORD(wParam) == EN_KILLFOCUS)//на паре
-		{
-			if (strcmp(sz_buffer, "") == 0)//на паре
-				SendMessage(hEditLogin, WM_SETTEXT, 0, (LPARAM)g_sz_INVITE);//на паре
-		}
+		if (HIWORD(wParam) == EN_SETFOCUS && strcmp(sz_buffer, g_sz_INVITE) == 0)//на паре
+				SendMessage((HWND)lParam, WM_SETTEXT, 0, (LPARAM)"");//на паре
+				//SendMessage(hEditLogin, WM_SETTEXT, 0, (LPARAM)"");//на паре
+		if (HIWORD(wParam) == EN_KILLFOCUS && strcmp(sz_buffer, "") == 0)//на паре
+				SendMessage((HWND)lParam, WM_SETTEXT, 0, (LPARAM)g_sz_INVITE);//на паре
+				//SendMessage(hEditLogin, WM_SETTEXT, 0, (LPARAM)g_sz_INVITE);//на паре
 	}
 	break;
 	case IDC_BUTTON_COPY:
