@@ -34,12 +34,12 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		HWND hCombo = GetDlgItem(hwnd, IDC_COMBO);
 		int index = SendMessage(hCombo, CB_GETCURSEL, 0, 0);
 		int lenOfText = SendMessage(hCombo, CB_GETLBTEXTLEN, index, 0);
-		TCHAR* buffer = new TCHAR[lenOfText];
+		TCHAR* buffer = new TCHAR[lenOfText+1];
 		SendMessage(hCombo, CB_GETLBTEXT, index, (LPARAM)buffer);
 		TCHAR line[256];
-		wsprintf(line, "Был выбран пункт %d %s", index+1, buffer);
+		wsprintf(line, "Был выбран пункт %d \nТекст: %s", index+1, buffer);
 		MessageBox(hwnd, line, "Info", MB_OK | MB_ICONINFORMATION);
-		delete[] buffer; 
+		delete[] buffer; break;
 	}
 	case IDCANCEL: EndDialog(hwnd, 0);
 	}
