@@ -37,6 +37,10 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		TCHAR* buffer = new TCHAR[lenOfText+1];
 		SendMessage(hCombo, CB_GETLBTEXT, index, (LPARAM)buffer);
 		TCHAR line[256];
+		if (index == CB_ERR) 
+		{
+			MessageBox(hwnd, "Не выбран ни один пункт!", "Warning", MB_OK | MB_ICONWARNING); break;
+		}
 		wsprintf(line, "Был выбран пункт %d \nТекст: %s", index+1, buffer);
 		MessageBox(hwnd, line, "Info", MB_OK | MB_ICONINFORMATION);
 		delete[] buffer; break;
