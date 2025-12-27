@@ -6,6 +6,7 @@ CONST CHAR* g_sz_VALUES[] = { "This", "is","my","first", "List","Box" };
 
 BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 BOOL CALLBACK DlgProcAdd(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+BOOL CALLBACK DlgProcEdit(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, INT nCmdShow)
 {
@@ -31,9 +32,14 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
+		case IDC_LIST:
+			if (HIWORD(wParam) == LBN_DBLCLK)
+				DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_DIALOG_ADD), hwnd, DlgProcEdit, 0);
+			break;
 		case IDC_BUTTON_ADD: 
 		{
 			DialogBoxParam(GetModuleHandle(NULL), MAKEINTRESOURCE(IDD_DIALOG_ADD), hwnd, DlgProcAdd, 0);
+			break;
 		}
 		case IDOK:
 		{
@@ -77,11 +83,46 @@ BOOL CALLBACK DlgProcAdd(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 			break;
 		case IDCANCEL:EndDialog(hwnd, 0);
-			break;
 		}
 	}
 	break;
 
+	case WM_CLOSE:EndDialog(hwnd, 0);
+	}
+	return FALSE;
+}
+
+BOOL CALLBACK DlgProcEdit(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+		HWND hParent = GetParent(hwnd);
+		HWND hList = GetDlgItem(hParent, IDC_LIST);
+		HWND hEdit = GetDlgItem(hwnd, IDC_EDIT_ADD);
+		INT i = SendMessage(hList, LB_GETCURSEL, 0, 0);
+		CHAR sz_buffer[MAX_PATH] = {};
+	switch (uMsg)
+	{
+	case WM_INITDIALOG:
+	{
+		SendMessage(hwnd, WM_SETTEXT, 0, (LPARAM)"Изменить элемент");
+		SendMessage(hList, LB_GETTEXT, i, (LPARAM)sz_buffer);
+		SendMessage(hEdit, WM_SETTEXT, 0, (LPARAM)sz_buffer);
+		SendMessage(hEdit, EM_SETSEL, 0, -1);
+		SendMessage(hEdit, EM_SETSEL, -1, -1);
+		SetFocus(hEdit);
+	}
+		break;
+	case WM_COMMAND:
+	{
+		switch (LOWORD(wParam))
+		{
+		case IDOK:
+			SendMessage(hEdit, WM_GETTEXT, MAX_PATH, (LPARAM)sz_buffer);
+			SendMessage(hList, LB_DELETESTRING, i, 0);
+			SendMessage(hList, LB_INSERTSTRING, i, (LPARAM)sz_buffer);
+		case IDCANCEL:EndDialog(hwnd, 0);
+		}	
+	}
+	break;
 	case WM_CLOSE:EndDialog(hwnd, 0);
 	}
 	return FALSE;
