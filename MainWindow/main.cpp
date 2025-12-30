@@ -30,14 +30,23 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, IN
 		return 0;
 	}
 
+	INT screenHeight = GetSystemMetrics(SM_CYSCREEN);
+	INT screenWidth = GetSystemMetrics(SM_CXSCREEN);
+	
+	INT screenSizeHeight = screenHeight * 75 / 100;
+	INT screenSizeWidth = screenWidth * 75 / 100;
+	
+	INT screenCenterHeight = (screenHeight - screenSizeHeight) / 2;
+	INT screenCenterWidth = (screenWidth - screenSizeWidth) / 2;
+
 	HWND hwnd = CreateWindowEx
 	(
 		NULL,				//exStyles
 		g_sz_CLASS_NAME,	//ClassName
 		g_sz_CLASS_NAME,	//Window title
 		WS_OVERLAPPEDWINDOW,//Стиль окна. Наюор стилей всегда зависит от класса окна. Стиль главного окна всегда WS_OVERLAPPEDWINDOW
-		CW_USEDEFAULT, CW_USEDEFAULT,//начальная позиция окна
-		CW_USEDEFAULT, CW_USEDEFAULT,//Размер окна
+		screenCenterWidth, screenCenterHeight,//начальная позиция окна
+		screenSizeWidth, screenSizeHeight, //Размер окна
 		NULL,//parent window
 		NULL,//hMenu. Для главного окна этот параметр определяет главное меню.
 		//Для дочернего окна (Control) этот параметр содержит ResourceID дочернего окна.
