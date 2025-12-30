@@ -1,5 +1,7 @@
 #undef UNICODE
+#define _CRT_SECURE_NO_WARNINGS
 #include<Windows.h>
+#include<stdio.h>
 
 CONST CHAR g_sz_CLASS_NAME[] = "Main Window PV_522";
 
@@ -38,7 +40,7 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, IN
 	
 	INT screenCenterHeight = (screenHeight - screenSizeHeight) / 2;
 	INT screenCenterWidth = (screenWidth - screenSizeWidth) / 2;
-
+	
 	HWND hwnd = CreateWindowEx
 	(
 		NULL,				//exStyles
@@ -77,6 +79,21 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_CREATE:
 		break;
+	case WM_SIZE:
+
+	case WM_MOVE:
+	{
+		RECT rect;
+		GetWindowRect(hwnd, &rect);
+		CHAR sz_title[MAX_PATH] = {};
+		sprintf(
+			sz_title, "%s - Position: %ix%i, Size%ix%i",
+			g_sz_CLASS_NAME, rect.left, rect.top,
+			rect.right - rect.left, rect.bottom-rect.top
+		);
+		SendMessage(hwnd, WM_SETTEXT, 0, (LPARAM)sz_title);
+	}
+	break;
 	case WM_COMMAND:
 		break;
 	case WM_DESTROY:
