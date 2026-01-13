@@ -12,6 +12,9 @@
 #define g_i_BUTTON_START_X			g_i_START_X
 #define g_i_BUTTON_START_Y			g_i_START_Y + g_i_DISPLAY_HEIGHT + g_i_INTERVAL
 
+#define g_i_WINDOW_WIDTH			g_i_DISPLAY_WIDTH + g_i_START_X*2 + 16
+#define g_i_WINDOW_HEIGHT			g_i_DISPLAY_HEIGHT + g_i_START_Y*2 + (g_i_BUTTON_SIZE+g_i_INTERVAL)*4 + 38 // 38 - высота строки заголовка(Title bar)
+
 #define BUTTON_X_POSITION(SHIFT)	g_i_BUTTON_START_X + (g_i_BUTTON_SIZE+g_i_INTERVAL)*(SHIFT)
 #define BUTTON_Y_POSITION(SHIFT)	g_i_BUTTON_START_Y + (g_i_BUTTON_SIZE+g_i_INTERVAL)*(SHIFT)
 
@@ -22,7 +25,7 @@ LRESULT WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, INT nCmdShow)
 {
-	//1) ����������� ������ ����:
+	//1) Регистрация класса окна:
 	WNDCLASSEX wClass;
 	ZeroMemory(&wClass, sizeof(wClass));
 
@@ -47,15 +50,15 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, IN
 		return 0;
 	}
 
-	//2) �������� ����:
+	//2) Создание окна:
 	HWND hwnd = CreateWindowEx
 	(
 		NULL,	//ExStyle
 		g_sz_WINDOW_CLASS,	//Window class
 		g_sz_WINDOW_CLASS,	//Window title
-		WS_OVERLAPPEDWINDOW,//Window style
+		WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME ^ WS_MAXIMIZEBOX,//Window style
 		CW_USEDEFAULT, CW_USEDEFAULT,//Position
-		CW_USEDEFAULT, CW_USEDEFAULT,//Size
+		g_i_WINDOW_WIDTH, g_i_WINDOW_HEIGHT,//Size
 		NULL,	//Parent Window
 		NULL,	//hMenu
 		hInstance,
@@ -64,7 +67,7 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, IN
 	ShowWindow(hwnd, nCmdShow);
 	UpdateWindow(hwnd);
 
-	//3) ������ ����� ���������:
+	//3) :
 	MSG msg;
 	while (GetMessage(&msg, NULL, 0, 0) > 0)
 	{
