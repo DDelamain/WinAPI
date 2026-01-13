@@ -1,9 +1,12 @@
-﻿#undef UNICODE
+﻿#define _CRT_SECURE_NO_WARNINGS
+#undef UNICODE
 #include<Windows.h>
+#include<cstdio>
+#include<iostream>
 #include"resource.h"
 
 #define g_i_BUTTON_SIZE				50
-#define g_i_INTERVAL				 2
+#define g_i_INTERVAL				 1
 #define g_i_DOUBLE_BUTTON_SIZE		g_i_BUTTON_SIZE*2 + g_i_INTERVAL
 #define g_i_START_X					10
 #define g_i_START_Y					10
@@ -84,6 +87,8 @@ LRESULT WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	{
 	case WM_CREATE:
 	{
+		AllocConsole();
+		freopen("CONOUT$", "w", stdout);
 		HWND hEdit = CreateWindowEx
 		(
 			NULL, "Edit", "0",
@@ -193,8 +198,76 @@ LRESULT WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	}
 	break;
 	case WM_COMMAND:
+	{
+		CHAR sz_digit[2] = {};
+		CHAR sz_display[MAX_PATH] = {};
+		HWND hEditDisplay = GetDlgItem(hwnd, IDC_DISPLAY);
+		SendMessage(hEditDisplay, WM_GETTEXT, MAX_PATH, (LPARAM)sz_display);
+		if (LOWORD(wParam) >= IDC_BUTTON_0 && LOWORD(wParam) <= IDC_BUTTON_9)
+		{
+			sz_digit[0] = LOWORD(wParam) - IDC_BUTTON_0 + '0';
+			if (sz_display[0] == '0' && sz_display[1] != '.')
+				strcpy(sz_display, sz_digit);
+			else
+				strcat(sz_display, sz_digit);
+			SendMessage(hEditDisplay, WM_SETTEXT, 0, (LPARAM)sz_display);
+			break;
+		}
+		if (LOWORD(wParam) == IDC_BUTTON_POINT)
+		{
+			if (strchr(sz_display, '.'))break;
+			strcat(sz_display, ".");
+			SendMessage(hEditDisplay, WM_SETTEXT, 0, (LPARAM)sz_display);
+			break;
+		}
+	}
 		break;
+	case WM_KEYDOWN:
+	{
+		CHAR sz_key[8] = {};
+		sprintf(sz_key, "%i", wParam);
+		//std::cout << sz_key << std::endl;
+		//MessageBox(hwnd, sz_key, "Info", MB_OK);
+		if (GetKeyState(VK_SHIFT) < 0 && wParam == '8')
+		{
+			SendMessage(GetDlgItem(hwnd, IDC_BUTTON_ASTER), BM_SETSTATE, TRUE, 0);
+		}
+		else if (wParam >= '0' && wParam <= '9')
+		{
+			SendMessage(GetDlgItem(hwnd, wParam - '0' + IDC_BUTTON_0), BM_SETSTATE, TRUE, NULL);
+		}
+		else if (wParam >= VK_NUMPAD0 && wParam <= VK_NUMPAD9)
+		{
+			SendMessage(GetDlgItem(hwnd, wParam - VK_NUMPAD0 + IDC_BUTTON_0), BM_SETSTATE, TRUE, NULL);
+		}
+		switch (wParam)
+		{
+		case VK_OEM_PLUS: SendMessage(GetDlgItem(hwnd, IDC_BUTTON_PLUS), BM_SETSTATE, TRUE, 0); break;
+		case VK_OEM_MINUS: SendMessage(GetDlgItem(hwnd, IDC_BUTTON_PLUS), BM_SETSTATE, TRUE, 0); break;
+		//case VK_OEM_PLUS: SendMessage(GetDlgItem(hwnd, IDC_BUTTON_PLUS), BM_SETSTATE, TRUE, 0); break;
+		}
+	}
+	break;
+	case WM_KEYUP:
+	{
+		if (GetKeyState(VK_SHIFT) < 0 && wParam == '8')
+		{
+			SendMessage(GetDlgItem(hwnd, IDC_BUTTON_ASTER), BM_SETSTATE, FALSE, 0);
+		}
+		if (wParam >= '0' && wParam <= '9')
+		{
+			SendMessage(GetDlgItem(hwnd, wParam - '0' + IDC_BUTTON_0), BM_SETSTATE, FALSE, NULL);
+			SendMessage(hwnd, WM_COMMAND, LOWORD(wParam - '0' + IDC_BUTTON_0), 0);
+		}
+		if (wParam >= VK_NUMPAD0 && wParam <= VK_NUMPAD9)
+		{
+			SendMessage(GetDlgItem(hwnd, wParam - VK_NUMPAD0 + IDC_BUTTON_0), BM_SETSTATE, FALSE, NULL);
+			SendMessage(hwnd, WM_COMMAND, LOWORD(wParam - VK_NUMPAD0 + IDC_BUTTON_0), 0);
+		}
+	}
+	break;
 	case WM_DESTROY:
+		FreeConsole();
 		PostQuitMessage(0);
 		break;
 	case WM_CLOSE:
