@@ -215,6 +215,23 @@ LRESULT WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		SetSkin(hwnd, "square_blue");
 	}
 	break;
+	/////////////////////////////////////////////////////////////////////////
+	case WM_CTLCOLOREDIT:
+	{
+		HDC hdc = (HDC)wParam;
+		//Контекст устройства - это набор ресурсов, привязанных к определенному устройству
+		//позволяющий применять к этому устройству графические функции
+		//в oc windows абсолютно для любого окна мождно получить контекст устройства епри помощи GetDC()
+		SetBkMode(hdc, OPAQUE);//Непрозрачный режим
+		SetBkColor(hdc, RGB(0,0,100));
+		SetTextColor(hdc, RGB(200, 200, 200));
+		HBRUSH hBackgroung = CreateSolidBrush(RGB(0, 0, 200));
+		SetClassLongPtr(hwnd, GCLP_HBRBACKGROUND, (LONG)hBackgroung);//Подменяем цвет фона в классе главного окна
+		//UpdateWindow(hwnd)
+		SendMessage(hwnd, WM_ERASEBKGND, wParam, 0);//убираем старый фон с главного окна
+		return (LRESULT)hBackground;
+	}
+
 	////////////////////////////////////////////////////////////////////////
 	case WM_COMMAND:
 	{
