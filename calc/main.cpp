@@ -24,7 +24,14 @@
 #define BUTTON_Y_POSITION(SHIFT)	g_i_BUTTON_START_Y + (g_i_BUTTON_SIZE+g_i_INTERVAL)*(SHIFT)
 
 CONST CHAR g_OPERATIONS[] = "+-*/";
-CONST CHAR* g_SKINS[] = { "metal_mistral", "square_blue" };
+enum Skin { SquareBlue, MetalMistral };
+enum Color { MainBackgroud, DisplayBackground, Font };
+CONST CHAR* g_SKINS[] = { "square_blue", "metal_mistral" };
+CONST COLORREF g_COLORS[2][3] =
+{
+	{ RGB(0,0,200), RGB(0,0,100), RGB(200,200,200) },
+	{ RGB(100,100,100), RGB(50,50,50), RGB(50,200,50) },
+};
 
 CONST CHAR g_sz_WINDOW_CLASS[] = "Calc PV_522";
 LRESULT WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -32,7 +39,7 @@ VOID SetSkin(HWND hwnd, CONST CHAR sz_skin[]);
 
 INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, INT nCmdShow)
 {
-	//1) Регистрация класса окна:
+	//1) ����������� ������ ����:
 	WNDCLASSEX wClass;
 	ZeroMemory(&wClass, sizeof(wClass));
 
@@ -87,6 +94,7 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, IN
 
 LRESULT WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	static Skin skin = Skin::SquareBlue;
 	switch (uMsg)
 	{
 	case WM_CREATE:
@@ -141,6 +149,7 @@ LRESULT WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			GetModuleHandle(NULL),
 			NULL
 		);
+		//https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadimagea
 		HBITMAP bmpButton0 = (HBITMAP)LoadImage
 		(
 			GetModuleHandle(NULL),
@@ -215,23 +224,26 @@ LRESULT WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		SetSkin(hwnd, "square_blue");
 	}
 	break;
-	/////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////
 	case WM_CTLCOLOREDIT:
 	{
-		HDC hdc = (HDC)wParam;
-		//Контекст устройства - это набор ресурсов, привязанных к определенному устройству
-		//позволяющий применять к этому устройству графические функции
-		//в oc windows абсолютно для любого окна мождно получить контекст устройства епри помощи GetDC()
-		SetBkMode(hdc, OPAQUE);//Непрозрачный режим
-		SetBkColor(hdc, RGB(0,0,100));
-		SetTextColor(hdc, RGB(200, 200, 200));
-		HBRUSH hBackgroung = CreateSolidBrush(RGB(0, 0, 200));
-		SetClassLongPtr(hwnd, GCLP_HBRBACKGROUND, (LONG)hBackgroung);//Подменяем цвет фона в классе главного окна
-		//UpdateWindow(hwnd)
-		SendMessage(hwnd, WM_ERASEBKGND, wParam, 0);//убираем старый фон с главного окна
+		HDC hdc = (HDC)wParam;	//Handler to Device Context.
+		//�������� ���������� - ��� ����� ��������, ����������� � ������������� ����������,
+		//����������� ��������� � ����� ���������� ����������� �������.
+		//� �� Windows ��������� ��� ������ ���� ����� �������� �������� ���������� ��� ������ ������� GetDC(HWND
+		//SetBkMode(hdc, OPAQUE);	//������ ������������� ����� ����������� hEditDisplay.
+		HBRUSH hBackground = CreateSolidBrush(g_COLORS[skin][Color::MainBackgroud]);
+		SetBkColor(hdc, g_COLORS[skin][Color::DisplayBackground]);
+		SetTextColor(hdc, g_COLORS[skin][Color::Font]);
+		/*SetBkColor(hdc, RGB(0, 0, 100));		//������ ���� ���� ��� EditControl
+		SetTextColor(hdc, RGB(200, 200, 200));	//������ ���� ������ ��� EditControl
+		HBRUSH hBackground = CreateSolidBrush(RGB(0, 0, 200));*/	//������ ����� ��� ���� ����� ��������� ������� ����.
+		SetClassLongPtr(hwnd, GCLP_HBRBACKGROUND, (LONG)hBackground);	//��������� ���� ���� � ������ �������� ����.
+		//UpdateWindow(hwnd);
+		SendMessage(hwnd, WM_ERASEBKGND, wParam, 0);	//������� ������ ��� � �������� ����.
 		return (LRESULT)hBackground;
 	}
-
+	break;
 	////////////////////////////////////////////////////////////////////////
 	case WM_COMMAND:
 	{
@@ -453,7 +465,6 @@ LRESULT WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 	}
 	break;
-
 	case WM_CONTEXTMENU:
 	{
 		HMENU hMenu = CreatePopupMenu();
@@ -471,11 +482,17 @@ LRESULT WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		);
 		switch (item)
 		{
-		case IDR_SQUARE_BLUE: SetSkin(hwnd, "square_blue"); break;
-		case IDR_METAL_MISTRAL: SetSkin(hwnd, "metal_mistral"); break;
-		case IDR_EXIT: SendMessage(hwnd, WM_CLOSE, 0, 0);
+		case IDR_SQUARE_BLUE:	SetSkin(hwnd, "square_blue");	break;
+		case IDR_METAL_MISTRAL: SetSkin(hwnd, "metal_mistral");	break;
+		case IDR_EXIT:			SendMessage(hwnd, WM_CLOSE, 0, 0);
 		}
 		DestroyMenu(hMenu);
+		skin = Skin(item - IDR_SQUARE_BLUE);
+		HWND hEditDisplay = GetDlgItem(hwnd, IDC_DISPLAY);
+		HDC hdc = GetDC(hwnd);
+		SendMessage(hwnd, WM_CTLCOLOREDIT, (WPARAM)hdc, (LPARAM)hEditDisplay);
+		ReleaseDC(hwnd, hdc);
+		SetFocus(hEditDisplay);
 	}
 	break;
 	case WM_DESTROY:
@@ -488,7 +505,6 @@ LRESULT WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	}
 	return FALSE;
 }
-
 VOID SetSkin(HWND hwnd, CONST CHAR sz_skin[])
 {
 	CONST CHAR* sz_NAMES[] =
@@ -517,15 +533,16 @@ VOID SetSkin(HWND hwnd, CONST CHAR sz_skin[])
 		HWND hButton = GetDlgItem(hwnd, IDC_BUTTON_0 + i);
 		CHAR sz_filename[MAX_PATH] = {};
 		sprintf(sz_filename, "ButtonsBMP\\%s\\%s.bmp", sz_skin, sz_NAMES[i]);
+		//sprintf(sz_filename, "ButtonsBMP\\%s\\button_%i.bmp", sz_skin, i);
 		HBITMAP bmpButton = (HBITMAP)LoadImage
-			(
-				GetModuleHandle(NULL),
-				sz_filename,
-				IMAGE_BITMAP,
-				i > 0 ? g_i_BUTTON_SIZE : g_i_DOUBLE_BUTTON_SIZE,
-				i < 17 ? g_i_BUTTON_SIZE : g_i_DOUBLE_BUTTON_SIZE,
-				LR_LOADFROMFILE
-			);
+		(
+			GetModuleHandle(NULL),
+			sz_filename,
+			IMAGE_BITMAP,
+			i > 0 ? g_i_BUTTON_SIZE : g_i_DOUBLE_BUTTON_SIZE,
+			i < 17 ? g_i_BUTTON_SIZE : g_i_DOUBLE_BUTTON_SIZE,
+			LR_LOADFROMFILE
+		);
 		SendMessage(hButton, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)bmpButton);
 	}
 }
