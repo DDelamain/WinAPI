@@ -13,7 +13,9 @@
 #define g_i_START_X					10
 #define g_i_START_Y					10
 #define g_i_DISPLAY_WIDTH			g_i_BUTTON_SIZE*5 + g_i_INTERVAL*4
-#define g_i_DISPLAY_HEIGHT			22
+#define g_i_DISPLAY_HEIGHT			g_i_BUTTON_SIZE
+#define g_i_FONT_HEIGHT				(g_i_DISPLAY_HEIGHT-2)
+#define g_i_FONT_WIDTH				g_i_FONT_HEIGHT/2.5
 #define g_i_BUTTON_START_X			g_i_START_X
 #define g_i_BUTTON_START_Y			g_i_START_Y + g_i_DISPLAY_HEIGHT + g_i_INTERVAL
 
@@ -95,6 +97,7 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, IN
 LRESULT WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	static Skin skin = Skin::SquareBlue;
+	static HFONT hFont = NULL;
 	switch (uMsg)
 	{
 	case WM_CREATE:
@@ -116,6 +119,23 @@ LRESULT WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			GetModuleHandle(NULL),
 			NULL
 		);
+		AddFontResourceEx("Fonts\\digital-7 (mono italic).ttf", FR_PRIVATE, 0);
+
+		hFont = CreateFont
+		(
+			g_i_FONT_HEIGHT, g_i_FONT_WIDTH,
+			0, 0, 500,			//Escapement,Orientation,weight
+			FALSE, FALSE, FALSE,	//Italic, Underline, Crossout
+			DEFAULT_CHARSET,
+			OUT_CHARACTER_PRECIS,
+			CLIP_DEFAULT_PRECIS,
+			ANTIALIASED_QUALITY,
+			DEFAULT_PITCH,
+			"Digital-7 Mono"
+		);
+		SendMessage(hEdit, WM_SETFONT, (WPARAM)hFont, TRUE);
+		//DeleteObject(hFont);
+
 		//////////////////////////////////////////////////////////////////
 		CHAR sz_digit[2] = {};
 		for (int i = 6; i >= 0; i -= 3)
@@ -497,6 +517,7 @@ LRESULT WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	break;
 	case WM_DESTROY:
 		FreeConsole();
+		DeleteObject(hFont);
 		PostQuitMessage(0);
 		break;
 	case WM_CLOSE:
