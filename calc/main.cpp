@@ -30,14 +30,12 @@ CONST CHAR g_sz_WINDOW_CLASS[] = "Calc PV_522";
 LRESULT WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 VOID SetSkin(HWND hwnd, CONST CHAR sz_skin[]);
 
-struct SKIN
+struct //SKIN
 {
 	int windowColor;
 	int displayColor;
 	int TextColor;
-};
-
-SKIN mainTheme;
+}mainTheme;
 
 INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, INT nCmdShow)
 {
