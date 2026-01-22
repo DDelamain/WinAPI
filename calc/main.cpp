@@ -18,7 +18,7 @@
 #define g_i_BUTTON_START_Y			g_i_START_Y + g_i_DISPLAY_HEIGHT + g_i_INTERVAL
 
 #define g_i_WINDOW_WIDTH			g_i_DISPLAY_WIDTH + g_i_START_X*2 + 16
-#define g_i_WINDOW_HEIGTH			g_i_DISPLAY_HEIGHT + g_i_START_Y*2 + (g_i_BUTTON_SIZE+g_i_INTERVAL)*4 + 38	//38 - ������ ������ ��������� (TitleBar)
+#define g_i_WINDOW_HEIGTH			g_i_DISPLAY_HEIGHT + g_i_START_Y*2 + (g_i_BUTTON_SIZE+g_i_INTERVAL)*4 + 38	//38 -(TitleBar)
 
 #define BUTTON_X_POSITION(SHIFT)	g_i_BUTTON_START_X + (g_i_BUTTON_SIZE+g_i_INTERVAL)*(SHIFT)
 #define BUTTON_Y_POSITION(SHIFT)	g_i_BUTTON_START_Y + (g_i_BUTTON_SIZE+g_i_INTERVAL)*(SHIFT)
@@ -29,6 +29,15 @@ CONST CHAR* g_SKINS[] = { "metal_mistral", "square_blue" };
 CONST CHAR g_sz_WINDOW_CLASS[] = "Calc PV_522";
 LRESULT WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 VOID SetSkin(HWND hwnd, CONST CHAR sz_skin[]);
+
+struct SKIN
+{
+	int windowColor;
+	int displayColor;
+	int TextColor;
+};
+
+SKIN mainTheme;
 
 INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, INT nCmdShow)
 {
@@ -44,7 +53,7 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, IN
 	wClass.hIcon = LoadIcon(hInstance, IDI_APPLICATION);
 	wClass.hIconSm = LoadIcon(hInstance, IDI_APPLICATION);
 	wClass.hCursor = LoadCursor(hInstance, IDC_ARROW);
-	wClass.hbrBackground = (HBRUSH)COLOR_WINDOW;
+	wClass.hbrBackground = NULL;
 
 	wClass.hInstance = hInstance;
 	wClass.lpszClassName = g_sz_WINDOW_CLASS;
@@ -57,7 +66,7 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, IN
 		return 0;
 	}
 
-	//2) �������� ����:
+	//2) :
 	HWND hwnd = CreateWindowEx
 	(
 		NULL,	//ExStyle
@@ -74,7 +83,7 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, IN
 	ShowWindow(hwnd, nCmdShow);
 	UpdateWindow(hwnd);
 
-	//3) ������ ����� ���������:
+	//3) :
 	MSG msg;
 	while (GetMessage(&msg, NULL, 0, 0) > 0)
 	{
@@ -108,6 +117,25 @@ LRESULT WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			GetModuleHandle(NULL),
 			NULL
 		);
+		//////////////////////////////////////////////////////////////////
+		HFONT hFont = CreateFont
+		(
+			-22,							//высота шрифта
+			0,								//ширина шрифта
+			0,								//угол поворота шрифта
+			0,								//ориентация символов
+			FW_DONTCARE,					//толщина
+			FALSE,							//курсив
+			FALSE,							//подчеркивание
+			FALSE,							//зачеркивание
+			ANSI_CHARSET,					//кодировка
+			OUT_TT_PRECIS,					//вывод
+			CLIP_DEFAULT_PRECIS,			//обрезать символы
+			DEFAULT_QUALITY,				//качество
+			DEFAULT_PITCH | FF_DONTCARE,	//
+			TEXT("Crystal")					//название
+		);
+		SendMessage(hEdit, WM_SETFONT, (WPARAM)hFont, TRUE);
 		//////////////////////////////////////////////////////////////////
 		CHAR sz_digit[2] = {};
 		for (int i = 6; i >= 0; i -= 3)
@@ -223,22 +251,37 @@ LRESULT WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		//позволяющий применять к этому устройству графические функции
 		//в oc windows абсолютно для любого окна мождно получить контекст устройства епри помощи GetDC()
 		SetBkMode(hdc, OPAQUE);//Непрозрачный режим
-		SetBkColor(hdc, RGB(0,0,100));
-		SetTextColor(hdc, RGB(200, 200, 200));
-		HBRUSH hBackgroung = CreateSolidBrush(RGB(0, 0, 200));
-		SetClassLongPtr(hwnd, GCLP_HBRBACKGROUND, (LONG)hBackgroung);//Подменяем цвет фона в классе главного окна
+		SetBkColor(hdc, mainTheme.displayColor);
+		SetTextColor(hdc, mainTheme.TextColor);
+		static HBRUSH hBackground = NULL;
+		if (hBackground)
+			DeleteObject(hBackground);
+		hBackground = CreateSolidBrush(mainTheme.displayColor);
+		//SetClassLongPtr(hwnd, GCLP_HBRBACKGROUND, (LONG)hBackgroung);//Подменяем цвет фона в классе главного окна
 		//UpdateWindow(hwnd)
-		SendMessage(hwnd, WM_ERASEBKGND, wParam, 0);//убираем старый фон с главного окна
+		//SendMessage(hwnd, WM_ERASEBKGND, wParam, 0);//убираем старый фон с главного окна
 		return (LRESULT)hBackground;
+	}
+
+	case WM_ERASEBKGND:
+	{
+		HDC hdc = (HDC)wParam;
+		RECT rc;
+		GetClientRect(hwnd, &rc);
+		HBRUSH hBackground = CreateSolidBrush(mainTheme.windowColor);
+		FillRect(hdc, &rc, hBackground);
+		DeleteObject(hBackground);
+		
+		return TRUE;
 	}
 
 	////////////////////////////////////////////////////////////////////////
 	case WM_COMMAND:
 	{
-		static DOUBLE	a = DBL_MIN, b = DBL_MIN;	//����������-��������� ��������, ������� ����� ������� 'double'.
+		static DOUBLE	a = DBL_MIN, b = DBL_MIN;	//
 		static INT		operation = 0;
-		static BOOL		input = FALSE;	//����������� ���� �����;
-		static BOOL		input_operation = FALSE;	//����������� ���� �������� +, -, *, / ;
+		static BOOL		input = FALSE;	//
+		static BOOL		input_operation = FALSE;	//
 		static BOOL		executed = FALSE;
 
 		CHAR sz_digit[2] = {};
@@ -276,7 +319,7 @@ LRESULT WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		}
 		if (LOWORD(wParam) == IDC_BUTTON_CLR)
 		{
-			a = DBL_MIN, b = DBL_MIN;	//����������-��������� ��������, ������� ����� ������� 'double'.
+			a = DBL_MIN, b = DBL_MIN;	//
 			operation = 0;
 			input = FALSE;
 			input_operation = FALSE;
@@ -491,6 +534,18 @@ LRESULT WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 VOID SetSkin(HWND hwnd, CONST CHAR sz_skin[])
 {
+	if (strcmp(sz_skin, "square_blue") == 0)
+	{
+		mainTheme.windowColor = RGB(10, 10, 100);
+		mainTheme.displayColor = RGB(200, 200, 200);
+		mainTheme.TextColor = RGB(0, 0, 200);
+	}
+	else if (strcmp(sz_skin, "metal_mistral") == 0)
+	{
+		mainTheme.windowColor = RGB(190, 190, 190);
+		mainTheme.displayColor = RGB(220, 220, 220);
+		mainTheme.TextColor = RGB(20, 20, 20);
+	}
 	CONST CHAR* sz_NAMES[] =
 	{
 		"button_0",
@@ -528,4 +583,6 @@ VOID SetSkin(HWND hwnd, CONST CHAR sz_skin[])
 			);
 		SendMessage(hButton, BM_SETIMAGE, IMAGE_BITMAP, (LPARAM)bmpButton);
 	}
+	InvalidateRect(hwnd, NULL, TRUE);//сообщение, что окно устарело
+	UpdateWindow(hwnd);
 }
